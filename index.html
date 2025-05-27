@@ -31,6 +31,15 @@
       width: 90%;
       max-width: 600px;
     }
+    
+    @media (max-width: 600px) {
+      .question-block {
+        width: 100%;  /* スマホは幅100%にして余白はpaddingで確保 */
+      }
+      div[style*="flex-wrap: nowrap"] {
+        flex-wrap: wrap !important; /* スマホ画面は折り返して見切れ防止 */
+      }
+    }
     .radio-grid {
       display: inline-block;
       margin: 2px 20px;
