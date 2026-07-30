@@ -4,72 +4,95 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MMSEチェック</title>
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: sans-serif;
       margin: 4px;
       background-color: #f7f9fc;
       text-align: center;
     }
+
     .hidden {
       display: none;
     }
+
     h1 {
-      margin: 4px 0;     /* ← これまでよりさらに縦方向を圧縮 */
-      font-size: 1.3em;  /* ← 任意：タイトルを少し小さく */
+      margin: 4px 0;
+      font-size: 1.3em;
     }
+
     h3 {
-      margin: 4px 0; /* ← デフォルトは margin: 1em 0; とかなり大きい */
-      font-size: 1em; /* 任意。文字サイズも少し小さくすれば詰めやすい */
+      margin: 4px 0;
+      font-size: 1em;
     }
+
+    /*
+      すべての設問行に共通の横幅を設定する。
+      1問だけの行（設問1・2）も、この行幅いっぱいに広がる。
+    */
+    .question-row {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 10px;
+      width: calc(100% - 24px);
+      max-width: 1200px;
+      margin: 10px auto;
+    }
+
     .question-block {
+      flex: 1 1 0;
+      min-width: 0;
       background-color: #fff;
       border: 1px solid #ddd;
       border-radius: 10px;
-      padding: 0px;
-      margin: 0px;
-      width: 90%;
-      max-width: 600px;
+      padding: 0;
+      margin: 0;
     }
-    
-    @media (max-width: 600px) {
-      .question-block {
-        width: 100%;  /* スマホは幅100%にして余白はpaddingで確保 */
-      }
-      div[style*="flex-wrap: nowrap"] {
-        flex-wrap: wrap !important; /* スマホ画面は折り返して見切れ防止 */
-      }
-    }
+
     .radio-grid {
       display: inline-block;
       margin: 2px 20px;
       text-align: center;
     }
-    .radio-labels, .radio-buttons {
+
+    .radio-labels,
+    .radio-buttons {
       display: flex;
       gap: 8px;
       justify-content: center;
     }
-    .radio-labels div, .radio-buttons label {
+
+    .radio-labels div,
+    .radio-buttons label {
       width: 2em;
       text-align: center;
     }
+
     .radio-buttons input[type="radio"] {
       width: 2em;
       height: 2em;
     }
+
     .sub-label {
       text-align: center;
       margin-bottom: 2px;
       font-weight: bold;
       font-size: 0.9em;
     }
+
     .button-group {
       display: flex;
       justify-content: center;
       gap: 20px;
       margin-top: 10px;
     }
+
     button {
       padding: 10px 20px;
       font-size: 1.1em;
@@ -79,36 +102,65 @@
       color: white;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #0056b3;
     }
+
     button.reset {
       background-color: #dc3545;
     }
+
     button.reset:hover {
       background-color: #a71d2a;
     }
+
     .score {
       font-weight: bold;
       font-size: 1em;
-      margin-top: 0px;
+      margin-top: 0;
     }
+
     input[type="password"] {
       padding: 10px;
       font-size: 1.1em;
       width: 300px;
+      max-width: 100%;
       margin-bottom: 10px;
+    }
+
+    /* スマートフォンでは各設問ブロックを縦に並べる */
+    @media (max-width: 600px) {
+      .question-row {
+        flex-wrap: wrap;
+        width: calc(100% - 12px);
+        gap: 10px;
+      }
+
+      .question-block {
+        flex: 1 1 100%;
+        width: 100%;
+      }
+
+      .radio-grid {
+        margin-right: 10px;
+        margin-left: 10px;
+      }
     }
   </style>
 </head>
-<body>
 
+<body>
   <!-- ログイン画面 -->
   <div id="loginPage">
     <h1>MMSEチェック</h1>
-    <input type="password" id="passwordInput" placeholder="パスワードを入力" />
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="パスワードを入力"
+    />
     <p>※指定のパスワード以外はデータベースに書き込めません！</p>
-    <button onclick="goToMMSE()">次へ</button>
+    <button type="button" onclick="goToMMSE()">次へ</button>
   </div>
 
   <!-- MMSEフォーム画面 -->
@@ -117,28 +169,49 @@
 
     <div style="margin: 6px 0; text-align: center; font-size: 1.2em;">
       <label for="userId">ID：</label>
-      <input type="text" id="userId" name="userId" placeholder="例: 123456" style="font-size: 1em; padding: 8px; width: 200px;" />
+      <input
+        type="text"
+        id="userId"
+        name="userId"
+        placeholder="例: 123456"
+        style="font-size: 1em; padding: 8px; width: 200px;"
+      />
     </div>
 
     <form id="mmseForm"></form>
 
     <div id="submit-note">
-        <div style="text-align: center;">
+      <div style="text-align: center;">
         <h1>「送信」ボタンは１回だけ押してください！</h1>
-    </div>
-    
-    <div class="button-group">
-      <button type="button" onclick="calculateScore()">送信</button>
-      <button type="button" class="reset" onclick="resetForm()">リセット</button>
-    </div>
+      </div>
 
-    <div class="score" id="result"></div>
+      <div class="button-group">
+        <button type="button" onclick="calculateScore()">送信</button>
+        <button type="button" class="reset" onclick="resetForm()">
+          リセット
+        </button>
+      </div>
+
+      <div class="score" id="result"></div>
+    </div>
   </div>
 
   <script>
     const questionData = [
-      { label: "1. 時間の見当識", name: "q1-", count: 5, max: 1, subs: ["日", "年", "季節", "曜日", "月"] },
-      { label: "2. 場所の見当識", name: "q2-", count: 5, max: 1, subs: ["都道府県", "市町村区", "現在地", "階", "地方"] },
+      {
+        label: "1. 時間の見当識",
+        name: "q1-",
+        count: 5,
+        max: 1,
+        subs: ["日", "年", "季節", "曜日", "月"]
+      },
+      {
+        label: "2. 場所の見当識",
+        name: "q2-",
+        count: 5,
+        max: 1,
+        subs: ["都道府県", "市町村区", "現在地", "階", "地方"]
+      },
       { label: "3. 即時想起", name: "q3", max: 3 },
       { label: "4. 計算", name: "q4", max: 5 },
       { label: "5. 遅延再生", name: "q5", max: 3 },
@@ -150,172 +223,199 @@
       { label: "11. 図形模写", name: "q11", max: 1 }
     ];
 
-    //スプレッドシート
-    const scriptURL = 'https://script.google.com/macros/s/AKfycby0RxfOAvI6LkO6drpZt3__csLTn6TeZbgv_q0SeZMyYb6lQGE9Ql0uXWtcsVLVUIFu/exec';
+    // スプレッドシート
+    const scriptURL =
+      "https://script.google.com/macros/s/AKfycby0RxfOAvI6LkO6drpZt3__csLTn6TeZbgv_q0SeZMyYb6lQGE9Ql0uXWtcsVLVUIFu/exec";
 
     function goToMMSE() {
-      const password = document.getElementById('passwordInput').value;
-      const query = password ? `?password=${encodeURIComponent(password)}` : '';
+      const password = document.getElementById("passwordInput").value;
+      const query = password
+        ? `?password=${encodeURIComponent(password)}`
+        : "";
+
       window.location.href = window.location.pathname + query;
     }
 
-    function getpasswordFromURL() {
+    function getPasswordFromURL() {
       const params = new URLSearchParams(window.location.search);
-      return params.get('password') || '';
+      return params.get("password") || "";
     }
 
     function createQuestions() {
-  const form = document.getElementById("mmseForm");
-  const groupings = [
-    [0],             // q1
-    [1],             // q2
-    [2, 3],          // q3, q4
-    [4, 5],
-    [6, 7],       // q5, q6, q7
-    [8, 9, 10]    // q8, q9, q10, q11
-  ];
+      const form = document.getElementById("mmseForm");
 
-  groupings.forEach(group => {
-    const groupWrapper = document.createElement("div");
-    groupWrapper.style.display = "flex";
-    groupWrapper.style.flexWrap = "nowrap";
-    groupWrapper.style.justifyContent = "center";
-    groupWrapper.style.gap = "10px";
-    groupWrapper.style.margin = "10px auto";
-    groupWrapper.style.maxWidth = "95%";
+      const groupings = [
+        [0],
+        [1],
+        [2, 3],
+        [4, 5],
+        [6, 7],
+        [8, 9, 10]
+      ];
 
-    group.forEach(index => {
-      const q = questionData[index];
-      const block = document.createElement("div");
-      block.className = "question-block";
-      block.style.flex = "1 1 280px";  // レスポンシブ対応
+      groupings.forEach((group) => {
+        const groupWrapper = document.createElement("div");
+        groupWrapper.className = "question-row";
 
-      const title = document.createElement("h3");
-      title.textContent = q.label;
-      block.appendChild(title);
+        group.forEach((index) => {
+          const q = questionData[index];
+          const block = document.createElement("div");
+          block.className = "question-block";
 
-      if (q.count) {
-        for (let i = 1; i <= q.count; i++) {
-          const subName = `${q.name}${i}`;
-          const subLabel = q.subs[i - 1];
+          const title = document.createElement("h3");
+          title.textContent = q.label;
+          block.appendChild(title);
 
-          const grid = document.createElement("div");
-          grid.className = "radio-grid";
+          if (q.count) {
+            for (let i = 1; i <= q.count; i++) {
+              const subName = `${q.name}${i}`;
+              const subLabel = q.subs[i - 1];
 
-          const labelText = document.createElement("div");
-          labelText.className = "sub-label";
-          labelText.textContent = subLabel;
-          grid.appendChild(labelText);
+              const grid = document.createElement("div");
+              grid.className = "radio-grid";
 
-          const labelRow = document.createElement("div");
-          labelRow.className = "radio-labels";
-          for (let j = 0; j <= q.max; j++) {
-            const label = document.createElement("div");
-            label.textContent = j;
-            labelRow.appendChild(label);
+              const labelText = document.createElement("div");
+              labelText.className = "sub-label";
+              labelText.textContent = subLabel;
+              grid.appendChild(labelText);
+
+              const labelRow = document.createElement("div");
+              labelRow.className = "radio-labels";
+
+              for (let j = 0; j <= q.max; j++) {
+                const label = document.createElement("div");
+                label.textContent = j;
+                labelRow.appendChild(label);
+              }
+
+              const buttonRow = document.createElement("div");
+              buttonRow.className = "radio-buttons";
+
+              for (let j = 0; j <= q.max; j++) {
+                const label = document.createElement("label");
+                label.innerHTML = `
+                  <input
+                    type="radio"
+                    name="${subName}"
+                    value="${j}"
+                    ${j === 0 ? "checked" : ""}
+                  >
+                `;
+                buttonRow.appendChild(label);
+              }
+
+              grid.appendChild(labelRow);
+              grid.appendChild(buttonRow);
+              block.appendChild(grid);
+            }
+          } else {
+            const grid = document.createElement("div");
+            grid.className = "radio-grid";
+
+            const labelRow = document.createElement("div");
+            labelRow.className = "radio-labels";
+
+            for (let j = 0; j <= q.max; j++) {
+              const label = document.createElement("div");
+              label.textContent = j;
+              labelRow.appendChild(label);
+            }
+
+            const buttonRow = document.createElement("div");
+            buttonRow.className = "radio-buttons";
+
+            for (let j = 0; j <= q.max; j++) {
+              const label = document.createElement("label");
+              label.innerHTML = `
+                <input
+                  type="radio"
+                  name="${q.name}"
+                  value="${j}"
+                  ${j === 0 ? "checked" : ""}
+                >
+              `;
+              buttonRow.appendChild(label);
+            }
+
+            grid.appendChild(labelRow);
+            grid.appendChild(buttonRow);
+            block.appendChild(grid);
           }
 
-          const buttonRow = document.createElement("div");
-          buttonRow.className = "radio-buttons";
-          for (let j = 0; j <= q.max; j++) {
-            const label = document.createElement("label");
-            label.innerHTML = `<input type="radio" name="${subName}" value="${j}" ${j === 0 ? "checked" : ""}>`;
-            buttonRow.appendChild(label);
-          }
+          groupWrapper.appendChild(block);
+        });
 
-          grid.appendChild(labelRow);
-          grid.appendChild(buttonRow);
-          block.appendChild(grid);
-        }
-      } else {
-        const grid = document.createElement("div");
-        grid.className = "radio-grid";
+        form.appendChild(groupWrapper);
+      });
+    }
 
-        const labelRow = document.createElement("div");
-        labelRow.className = "radio-labels";
-        for (let j = 0; j <= q.max; j++) {
-          const label = document.createElement("div");
-          label.textContent = j;
-          labelRow.appendChild(label);
-        }
-
-        const buttonRow = document.createElement("div");
-        buttonRow.className = "radio-buttons";
-        for (let j = 0; j <= q.max; j++) {
-          const label = document.createElement("label");
-          label.innerHTML = `<input type="radio" name="${q.name}" value="${j}" ${j === 0 ? "checked" : ""}>`;
-          buttonRow.appendChild(label);
-        }
-
-        grid.appendChild(labelRow);
-        grid.appendChild(buttonRow);
-        block.appendChild(grid);
-      }
-
-      groupWrapper.appendChild(block);
-    });
-
-    form.appendChild(groupWrapper);
-  });
-}
-
-
-    //点数の計算
+    // 点数の計算
     async function calculateScore() {
-      const userId = document.getElementById('userId').value.trim();
+      const userId = document.getElementById("userId").value.trim();
+
       if (!userId) {
-        alert('IDを入力してください。');
+        alert("IDを入力してください。");
         return;
       }
 
-      const form = document.getElementById('mmseForm');
+      const form = document.getElementById("mmseForm");
       let total = 0;
-      const inputs = form.querySelectorAll('input[type="radio"]:checked');
-      inputs.forEach(input => {
-        total += parseInt(input.value) || 0;
+      const inputs = form.querySelectorAll(
+        'input[type="radio"]:checked'
+      );
+
+      inputs.forEach((input) => {
+        total += parseInt(input.value, 10) || 0;
       });
 
       let judgment = "";
+
       if (total >= 27) {
         judgment = "物忘れの心配はなさそうです";
       } else if (total >= 22) {
         judgment = "少し物忘れが気になるかもしれません";
       } else {
-        judgment = "記憶力が少し弱くなっているようです。早めに相談してみましょう";
+        judgment =
+          "記憶力が少し弱くなっているようです。早めに相談してみましょう";
       }
 
-      const resultDiv = document.getElementById('result');
+      const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = `ID: ${userId}<br>合計点: ${total} 点 / 30 点<br>判定: ${judgment}`;
       resultDiv.scrollIntoView({ behavior: "smooth" });
 
       await submitToGoogleSheet(userId, total, judgment);
     }
 
-    //フォームを初期状態に戻す
+    // フォームを初期状態に戻す
     function resetForm() {
-      const form = document.getElementById('mmseForm');
+      const form = document.getElementById("mmseForm");
       const inputs = form.querySelectorAll('input[type="radio"]');
-      inputs.forEach(input => {
-        input.checked = (input.value === "0");
+
+      inputs.forEach((input) => {
+        input.checked = input.value === "0";
       });
-      document.getElementById('userId').value = '';
-      document.getElementById('result').textContent = '';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      document.getElementById("userId").value = "";
+      document.getElementById("result").textContent = "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    //google スプレッドシートにデータを送る
+    // Googleスプレッドシートにデータを送る
     async function submitToGoogleSheet(userId, total, evaluation) {
-      const form = document.getElementById('mmseForm');
-      const inputs = form.querySelectorAll('input[type="radio"]:checked');
+      const form = document.getElementById("mmseForm");
+      const inputs = form.querySelectorAll(
+        'input[type="radio"]:checked'
+      );
 
       const formData = new FormData();
-      const password = getpasswordFromURL();
-      formData.append('userId', userId);
-      formData.append('total', total);
-      formData.append('evaluation', evaluation);
-      formData.append('password', password);
+      const password = getPasswordFromURL();
 
-      inputs.forEach(input => {
+      formData.append("userId", userId);
+      formData.append("total", total);
+      formData.append("evaluation", evaluation);
+      formData.append("password", password);
+
+      inputs.forEach((input) => {
         formData.append(input.name, input.value);
       });
 
@@ -326,26 +426,29 @@
         });
 
         const text = await response.text();
+
         if (text.trim() === "OK") {
-          alert('送信が完了しました。');
+          alert("送信が完了しました。");
         } else {
-          alert('送信に失敗しました。サーバー応答：' + text);
+          alert("送信に失敗しました。サーバー応答：" + text);
         }
       } catch (error) {
         console.error(error);
-        alert('送信エラー：' + error.message);
+        alert("送信エラー：" + error.message);
       }
     }
 
-    // 初期処理：URLにpasswordがあるかでページ切り替え
+    // 初期処理：URLにpasswordがあるかでページを切り替える
     window.onload = () => {
-      if (window.location.search.includes("password") || window.location.search.length > 0) {
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('mmsePage').classList.remove('hidden');
+      if (
+        window.location.search.includes("password") ||
+        window.location.search.length > 0
+      ) {
+        document.getElementById("loginPage").classList.add("hidden");
+        document.getElementById("mmsePage").classList.remove("hidden");
         createQuestions();
       }
     };
   </script>
 </body>
 </html>
-
